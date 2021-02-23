@@ -1072,6 +1072,7 @@ static EFI_STATUS verify_buffer (char *data, int datasize,
 					     vendor_cert_size, vendor_cert);
 			efi_status = EFI_SUCCESS;
 			drain_openssl_errors();
+			console_print(L"Binary is verified by the vendor certificate.\n");
 			return efi_status;
 		} else {
 			LogError(L"AuthenticodeVerify(vendor_cert) failed\n");
@@ -1850,6 +1851,7 @@ EFI_STATUS start_image(EFI_HANDLE image_handle, CHAR16 *ImagePath)
 		goto done;
 	}
 
+
 	if (findNetboot(li->DeviceHandle)) {
 		efi_status = parseNetbootinfo(image_handle);
 		if (EFI_ERROR(efi_status)) {
@@ -1906,6 +1908,7 @@ EFI_STATUS start_image(EFI_HANDLE image_handle, CHAR16 *ImagePath)
 	/*
 	 * Verify and, if appropriate, relocate and execute the executable
 	 */
+
 	efi_status = handle_image(data, datasize, li, &entry_point,
 				  &alloc_address, &alloc_pages);
 	if (EFI_ERROR(efi_status)) {
@@ -1951,7 +1954,7 @@ EFI_STATUS init_grub(EFI_HANDLE image_handle)
 	    efi_status == EFI_ACCESS_DENIED) {
 		efi_status = start_image(image_handle, MOK_MANAGER);
 		if (EFI_ERROR(efi_status)) {
-			console_print(L"start_image() returned %r\n", efi_status);
+			console_print(L"start_image() 1 returned %r\n", efi_status);
 			msleep(2000000);
 			return efi_status;
 		}
@@ -1961,7 +1964,7 @@ EFI_STATUS init_grub(EFI_HANDLE image_handle)
 	}
 
 	if (EFI_ERROR(efi_status)) {
-		console_print(L"start_image() returned %r\n", efi_status);
+		console_print(L"start_image() 2 returned %r\n", efi_status);
 		msleep(2000000);
 	}
 

@@ -241,9 +241,21 @@ static EFI_STATUS parseDhcp6()
 	EFI_PXE_BASE_CODE_DHCPV6_PACKET *packet = (EFI_PXE_BASE_CODE_DHCPV6_PACKET *)&pxe->Mode->DhcpAck.Raw;
 	CHAR8 *bootfile_url;
 
-	bootfile_url = get_v6_bootfile_url(packet);
+	//Try with ProxyOffer, fall back to dhcpack
+	if(pxe->Mode->ProxyOfferReceived) {
+		EFI_PXE_BASE_CODE_DHCPV6_PACKET *proxyPacket = (EFI_PXE_BASE_CODE_DHCPV6_PACKET *)&pxe->Mode->ProxyOffer.Raw;
+		bootfile_url = get_v6_bootfile_url(proxyPacket);
+	}
+	else{
+		console_print(L"ProxyOffer not received\n");
+	}
+
+	if(!bootfile_url){
+		bootfile_url = get_v6_bootfile_url(packet);
+	}
 	if (!bootfile_url)
 		return EFI_NOT_FOUND;
+
 	if (extract_tftp_info(bootfile_url) == FALSE) {
 		FreePool(bootfile_url);
 		return EFI_NOT_FOUND;
@@ -263,9 +275,15 @@ static EFI_STATUS parseDhcp4()
 		 * Proxy should not have precedence.  Check if DhcpAck
 		 * contained boot info.
 		 */
-		if(pxe->Mode->DhcpAck.Dhcpv4.BootpBootFile[0] == '\0')
+		
+		//ProxyDHCP to always have the precedence.
+		//if(pxe->Mode->DhcpAck.Dhcpv4.BootpBootFile[0] == '\0')
 			pkt_v4 = &pxe->Mode->ProxyOffer.Dhcpv4;
+	}else
+	{
+		console_print(L"ProxyOffer not received\n");
 	}
+
 
 	INTN dir_len = strnlena(pkt_v4->BootpBootFile, 127);
 	INTN i;
