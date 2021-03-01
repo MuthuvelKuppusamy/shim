@@ -272,13 +272,10 @@ static EFI_STATUS parseDhcp4()
 
 	if(pxe->Mode->ProxyOfferReceived) {
 		/*
-		 * Proxy should not have precedence.  Check if DhcpAck
-		 * contained boot info.
+		 * Proxy should have precedence
 		 */
 		
-		//ProxyDHCP to always have the precedence.
-		//if(pxe->Mode->DhcpAck.Dhcpv4.BootpBootFile[0] == '\0')
-			pkt_v4 = &pxe->Mode->ProxyOffer.Dhcpv4;
+		pkt_v4 = &pxe->Mode->ProxyOffer.Dhcpv4;
 	}else
 	{
 		console_print(L"ProxyOffer not received\n");
